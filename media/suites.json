@@ -1,0 +1,95 @@
+{
+  "suites": [
+    {
+      "id": "general-purpose-v1",
+      "name": "General Purpose (v1)",
+      "description": "Mixed prompts spanning reasoning, summarization, writing and Q&A.",
+      "iterations": 3,
+      "version": "1.0.0",
+      "cases": [
+        {
+          "id": "gp-reasoning-1",
+          "name": "Light Reasoning",
+          "prompt": "A farmer has 17 sheep and all but 9 die. How many are left? Explain briefly.",
+          "tags": ["reasoning"],
+          "params": { "temperature": 0.2, "max_tokens": 256 }
+        },
+        {
+          "id": "gp-summarize-1",
+          "name": "Summarize Short Article",
+          "prompt": "Summarize the following in 3 bullet points:\n\nQuantum computing harnesses quantum mechanics to perform computations that are intractable for classical computers. It uses qubits that can exist in superposition and be entangled, allowing for parallelism. While promising, it faces challenges like error correction and decoherence.",
+          "reference": "• Uses qubits and quantum effects (superposition, entanglement)\n• Potential speedups for specific problems\n• Challenges: error correction, decoherence",
+          "tags": ["summarization"],
+          "params": { "temperature": 0.3, "max_tokens": 200 }
+        },
+        {
+          "id": "gp-writing-1",
+          "name": "Concise Writing",
+          "prompt": "Rewrite this sentence to be more concise and professional: \"I am writing this email to let you know that the report that I sent yesterday might possibly contain a mistake in the second section.\"",
+          "tags": ["writing"],
+          "params": { "temperature": 0.4, "max_tokens": 120 }
+        },
+        {
+          "id": "gp-qa-1",
+          "name": "Short QA",
+          "prompt": "Who wrote the novel '1984'? Answer in two words.",
+          "reference": "George Orwell",
+          "tags": ["qa", "factual"],
+          "params": { "temperature": 0.0, "max_tokens": 16 }
+        },
+        {
+          "id": "gp-structure-1",
+          "name": "JSON Structuring",
+          "prompt": "Extract the following text into JSON with fields {title, author, year}:\n\nTitle: The Pragmatic Programmer\nAuthors: Andrew Hunt and David Thomas\nYear: 1999",
+          "tags": ["structuring", "json"],
+          "params": { "temperature": 0.0, "max_tokens": 120 }
+        }
+      ]
+    },
+    {
+      "id": "code-assist-v1",
+      "name": "Code Assist (v1)",
+      "description": "Small coding and documentation tasks without external tool calls.",
+      "iterations": 3,
+      "version": "1.0.0",
+      "cases": [
+        {
+          "id": "code-docs-1",
+          "name": "Docstring Generation",
+          "prompt": "Write a concise Python docstring for the function:\n\ndef is_palindrome(s: str) -> bool:\n    return s == s[::-1]",
+          "tags": ["code", "docs"],
+          "params": { "temperature": 0.2, "max_tokens": 120 }
+        },
+        {
+          "id": "code-refactor-1",
+          "name": "Refactor for Clarity",
+          "prompt": "Refactor this JavaScript to be more readable and modern:\n\nfunction sum(a,b){var t=0;for(var i=a;i<=b;i++){t+=i}return t}",
+          "tags": ["code", "refactor"],
+          "params": { "temperature": 0.3, "max_tokens": 150 }
+        },
+        {
+          "id": "code-explain-1",
+          "name": "Explain Code",
+          "prompt": "Explain what this code does in simple terms:\n\nconst arr=[1,2,3,4,5];\nconst r=arr.reduce((a,c)=>a+c,0);\nconsole.log(r);",
+          "tags": ["code", "explain"],
+          "params": { "temperature": 0.3, "max_tokens": 120 }
+        },
+        {
+          "id": "code-qa-1",
+          "name": "Short Code QA",
+          "prompt": "In Big-O notation, what is the complexity of binary search on a sorted array? One token answer like O(log n).",
+          "reference": "O(log n)",
+          "tags": ["code", "qa", "factual"],
+          "params": { "temperature": 0.0, "max_tokens": 8 }
+        },
+        {
+          "id": "code-struct-1",
+          "name": "Structured Output",
+          "prompt": "Given an input number n, return a JSON with fields {n, isEven, nextThree: number[]} explaining your logic briefly in a comment. Use n=7.",
+          "tags": ["code", "json"],
+          "params": { "temperature": 0.2, "max_tokens": 160 }
+        }
+      ]
+    }
+  ]
+}

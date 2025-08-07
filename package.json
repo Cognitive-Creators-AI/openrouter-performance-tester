@@ -1,0 +1,104 @@
+{
+  "name": "openrouter-performance-tester",
+  "displayName": "OpenRouter Performance Tester (ORPT)",
+  "icon": "media/icon.png",
+  "description": "Professional AI model performance benchmarking and testing for OpenRouter API",
+  "version": "1.0.0",
+  "preview": true,
+  "publisher": "orpt",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "openrouter",
+    "ai",
+    "llm",
+    "performance",
+    "testing",
+    "benchmarking"
+  ],
+  "activationEvents": [
+    "onView:orpt.dashboard",
+    "onCommand:orpt.showDashboard"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "orpt.showDashboard",
+        "title": "Show ORPT Dashboard",
+        "category": "ORPT"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "orpt-container",
+          "title": "OpenRouter Performance Tester",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "orpt-container": [
+        {
+          "type": "webview",
+          "id": "orpt.dashboard",
+          "name": "Dashboard"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "OpenRouter Performance Tester",
+      "properties": {
+        "orpt.saveTestHistory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save test results to history"
+        },
+        "orpt.maxHistoryItems": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum number of test results to keep in history"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^8.50.0",
+    "typescript": "^5.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester"
+  },
+  "bugs": {
+    "url": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester/issues"
+  },
+  "homepage": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester#readme",
+  "license": "MIT",
+  "dependencies": {
+    "chart.js": "^4.5.0",
+    "jspdf": "^3.0.1",
+    "proxy-agent": "^6.5.0"
+  }
+}

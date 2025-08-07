@@ -1,0 +1,345 @@
+:root {
+  --orpt-accent: var(--vscode-charts-blue, #58a6ff);
+  --orpt-accent-2: var(--vscode-charts-green, #2ea043);
+  --orpt-surface: var(--vscode-editor-background);
+  --orpt-surface-2: var(--vscode-editor-inactiveSelectionBackground);
+  --orpt-border: var(--vscode-panel-border);
+  --orpt-text: var(--vscode-foreground);
+  --orpt-muted: var(--vscode-descriptionForeground);
+  --orpt-input-bg: var(--vscode-input-background);
+  --orpt-input-fg: var(--vscode-input-foreground);
+  --orpt-input-border: var(--vscode-input-border);
+  --orpt-focus: var(--vscode-focusBorder);
+  --orpt-btn: var(--vscode-button-background);
+  --orpt-btn-fg: var(--vscode-button-foreground);
+  --orpt-btn-sec: var(--vscode-button-secondaryBackground);
+  --orpt-btn-sec-fg: var(--vscode-button-secondaryForeground);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--orpt-surface);
+  color: var(--orpt-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Visual hierarchy ordering via CSS (no HTML moves needed) */
+.api-section { order: 1; }
+.test-section { order: 2; }
+.progress-section { order: 3; }
+.results-section { order: 4; }
+.suite-section { order: 5; }
+.wizard-section { order: 6; }
+.suite-builder-section { order: 7; }
+
+header {
+  order: 0;
+  border: 1px solid var(--orpt-border);
+  border-radius: 10px;
+  padding: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--orpt-accent) 18%, transparent), transparent 60%),
+    linear-gradient(225deg, color-mix(in oklab, var(--orpt-accent-2) 16%, transparent), transparent 60%),
+    var(--orpt-surface);
+}
+
+header h1 {
+  font-size: 22px;
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+}
+
+header p {
+  color: var(--orpt-muted);
+  font-size: 13px;
+}
+
+section {
+  padding: 16px;
+  border: 1px solid var(--orpt-border);
+  background: var(--orpt-surface);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+section h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--orpt-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+section h2::after {
+  content: "";
+  height: 2px;
+  width: 36px;
+  background: var(--orpt-accent);
+  border-radius: 2px;
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  opacity: 0.6;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  color: var(--orpt-text);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--orpt-input-bg);
+  color: var(--orpt-input-fg);
+  border: 1px solid var(--orpt-input-border);
+  border-radius: 7px;
+  font-size: 13px;
+  transition: border-color 0.15s ease, outline-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group textarea {
+  line-height: 1.4;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: 1px solid var(--orpt-focus);
+  border-color: var(--orpt-focus);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--orpt-focus) 25%, transparent);
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: transform 0.06s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  will-change: transform;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--orpt-btn) 100%, #0000), color-mix(in oklab, var(--orpt-btn) 75%, #0000));
+  color: var(--orpt-btn-fg);
+  border-color: color-mix(in oklab, var(--orpt-btn) 60%, #0000);
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--orpt-btn-sec) 100%, #0000), color-mix(in oklab, var(--orpt-btn-sec) 75%, #0000));
+  color: var(--orpt-btn-sec-fg);
+  border-color: color-mix(in oklab, var(--orpt-btn-sec) 60%, #0000);
+}
+.btn-secondary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+
+.btn-large {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: color-mix(in oklab, var(--orpt-surface-2) 85%, transparent);
+  border: 1px dashed var(--orpt-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #888;
+  box-shadow: 0 0 0 3px rgba(136,136,136,0.2);
+}
+
+.status-connected { background: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,0.2); }
+.status-disconnected { background: #f85149; box-shadow: 0 0 0 3px rgba(248,81,73,0.2); }
+
+.progress-section { text-align: center; }
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: color-mix(in oklab, var(--orpt-surface-2) 70%, transparent);
+  border: 1px solid var(--orpt-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--orpt-accent), var(--orpt-accent-2));
+  transition: width 0.25s ease;
+}
+
+.result-card {
+  padding: 14px;
+  background: color-mix(in oklab, var(--orpt-surface-2) 85%, transparent);
+  border: 1px solid var(--orpt-border);
+  border-radius: 10px;
+}
+
+.result-card h3 {
+  margin-bottom: 10px;
+  color: var(--orpt-text);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric { text-align: center; }
+
+.metric-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--orpt-accent);
+  margin-bottom: 2px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--orpt-muted);
+}
+
+.history-item {
+  padding: 10px;
+  margin-bottom: 6px;
+  background: color-mix(in oklab, var(--orpt-surface-2) 80%, transparent);
+  border: 1px solid var(--orpt-border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--orpt-muted);
+  font-style: italic;
+}
+
+/* Grids and layout utilities */
+.grid {
+  display: grid;
+  gap: 12px;
+}
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 900px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Canvas responsiveness */
+canvas {
+  display: block;
+  width: 100% !important;
+  height: 260px !important;
+  border-radius: 10px;
+  background: var(--orpt-input-bg);
+  border: 1px solid var(--orpt-border);
+}
+
+/* Helper text */
+.help-text {
+  color: var(--orpt-muted);
+  font-size: 12.5px;
+}
+
+/* Inline help "?" badge with lightweight tooltip */
+.help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: var(--orpt-accent);
+  color: #ffffff;
+  border: 1px solid color-mix(in oklab, var(--orpt-accent) 60%, #0000);
+  cursor: help;
+  user-select: none;
+  position: relative;
+}
+.help:hover { filter: brightness(1.08); }
+.help:focus { outline: 1px solid var(--orpt-focus); outline-offset: 2px; }
+
+.help::after {
+  content: attr(data-tip);
+  display: none;
+  position: absolute;
+  z-index: 50;
+  top: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 360px;
+  white-space: pre-line;
+  background: color-mix(in oklab, var(--orpt-surface-2) 90%, transparent);
+  color: var(--orpt-text);
+  border: 1px solid var(--orpt-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.help:hover::after,
+.help:focus::after {
+  display: block;
+}
