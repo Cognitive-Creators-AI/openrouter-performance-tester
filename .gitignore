@@ -16,6 +16,17 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+# Package managers and auth tokens
+.npmrc
+.yarnrc
+.yarnrc.yml
+# Common private keys / certs
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
 
 # Logs
 npm-debug.log*
@@ -31,8 +42,6 @@ coverage-*/
 
 # Editor/IDE
 .vscode/
-!.vscode/extensions.json
-!.vscode/settings.json
 .idea/
 *.iml
 # Local AI/assistant project files
