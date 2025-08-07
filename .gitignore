@@ -35,6 +35,8 @@ coverage-*/
 !.vscode/settings.json
 .idea/
 *.iml
+# Local AI/assistant project files
+.claude/
 
 # Caches/temp
 .cache/

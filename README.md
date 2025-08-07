@@ -1,97 +1,154 @@
 # OpenRouter Performance Tester (ORPT) — Preview
 
-Measure model performance on OpenRouter with transparent speed, latency, cost, and reliability analytics. This is a Preview build focused on delivering immediate value with a clean workflow and honest metrics.
+Benchmark OpenRouter models with transparent speed, latency, cost, and reliability analytics. Designed for practitioners who need reproducible evidence, not anecdotes.
 
-Key features
+Badges
+- Preview release • VS Code ≥ 1.74 • MIT License • PRs welcome
+
+Table of contents
+- Why ORPT
+- Features
+- Quick start
+- Workflows
+  - Single test (ad‑hoc)
+  - Benchmark Suites (full runs)
+  - Recommendation Wizard (quick screening)
+  - Exports (MD/CSV/PDF)
+- Analytics explained
+- Providers and models (accuracy)
+- Custom suites (JSON)
+- Security and privacy
+- Requirements and settings
+- Troubleshooting
+- Roadmap (Preview → Stable)
+- Contributing and license
+
+Why ORPT
+- Honest measurements: tokens/sec (TPS), time to first token (TTFB), total time, cost, success rate.
+- Repeatable methodology: predefined suites for apples‑to‑apples comparisons.
+- Practical UX: progress indicators, quick screening, and executive exports.
+
+Features
 - Secure API key management
-  - Stored with VS Code SecretStorage (encrypted at rest, OS keychain-backed). Never written to files or logs.
-- Dynamic model and provider support
-  - Models fetched from OpenRouter; provider list scoped per selected model via /models/{id}/endpoints (with robust fallback mapping).
-- Single-model Benchmark Suites
-  - Run a predefined suite of cases against a selected model/provider with iterations and summary analytics.
-  - Aggregations: mean TPS, TTFB, total time, cost, success rate, std devs, total tokens.
+  - Stored with VS Code SecretStorage (encrypted at rest, OS keychain‑backed). Never written to files or logs.
+- Dynamic model/provider support
+  - Models fetched from OpenRouter; provider list scoped per selected model via /api/v1/models/{id}/endpoints (with robust fallback mapping).
+- Benchmark Suites (single model/provider at a time)
+  - Aggregations: mean TPS, mean TTFB, mean total time, mean cost, std devs, success rate, total tokens.
   - Charts:
-    - Bar (mean TPS per case) with ±1 SD whiskers and reliability outline (green/amber/red by success rate)
-    - Scatter (TTFB vs TPS): bubble size ~ mean cost/run; color ~ success rate
+    - Bar: mean TPS per case with ±1 SD whiskers and reliability outline (green/amber/red by success rate)
+    - Scatter: TTFB vs TPS; bubble size ~ mean cost/run; color ~ success rate
     - Radar: Speed, Latency, Cost, Consistency, Reliability
-- Recommendation Wizard (multi-model quick screen)
-  - Multi-select models, set constraints/weights, run a mini-benchmark, Cancel anytime.
-  - Progressive feedback and ranked results.
+- Recommendation Wizard (multi‑model quick screen)
+  - Multi‑select models, set constraints/weights, run a mini‑benchmark; Cancel anytime.
+  - Ranked results with cost estimates.
 - Exports
-  - Executive summary (Markdown), raw results (CSV), and PDF (when jsPDF is present).
+  - Executive Markdown report, raw results CSV, and PDF (when jsPDF is present).
 - Suite Builder (experimental)
-  - Create/edit/import/export suites as JSON. Custom suites merge with built-ins and override by id.
-
-Preview scope
-- This is a stable Preview: production-safe API key handling, working analytics and exports, and clear UX for key workflows.
-- Some roadmap items are intentionally not implemented yet (see “Known limitations & roadmap”).
+  - Create/edit/import/export suites as JSON. Custom suites merge with built‑ins and override by id.
+- Inline help and progress
+  - “?” badges explain sections at a glance; progress bars for suites and wizard runs.
 
 Quick start
-1) Install the VSIX (or from Marketplace when published).
-2) Open the ORPT Dashboard (command: “ORPT: Show ORPT Dashboard”).
-3) Save your OpenRouter API key (starts with sk-or-v1-).
-4) Wait for the status to turn Connected and models/providers to load.
-5) Choose a Model and Provider in “Test Configuration”.
-6) Benchmark Suites:
-   - Choose a Suite and Iterations per Case.
-   - Click “Run Suite”. View summary, bar, scatter, and radar charts.
-   - Export markdown/csv/pdf as needed (PDF requires jsPDF UMD bundled).
-7) Recommendation Wizard:
-   - Select models (multi-select), set constraints/weights, click “Recommend”.
-   - Use Cancel to stop mid-run; review ranked candidates.
+1) Install
+   - VSIX: run npx vsce package, then code --install-extension openrouter-performance-tester-*.vsix, or install from Marketplace when available.
+2) Open ORPT: “ORPT: Show ORPT Dashboard”.
+3) API key: paste your OpenRouter key (sk‑or‑v1‑…), Save. Status turns Connected.
+4) Select a model and provider in “Test Configuration”.
+5) Run a suite (Benchmark Suites) or use the Recommendation Wizard for a quick compare.
+
+Workflows
+
+Single test (ad‑hoc)
+- In Test Configuration:
+  - Model: pick one (e.g., x‑ai/grok‑4)
+  - Provider: pick exact endpoint or “auto”
+  - Prompt and Max Tokens
+- Click “Run Performance Test”.
+
+Benchmark Suites (full runs)
+- Select suite and iterations per case (the model/provider come from Test Configuration).
+- Click “Run Suite”. You’ll see:
+  - Summary cards with means
+  - Bar/Scatter/Radar charts
+  - Export buttons (Markdown/CSV/PDF; PDF requires jsPDF UMD)
+- Suite Summary shows the exact model and provider used for the run.
+
+Recommendation Wizard (quick screening)
+- Select models in the multi‑select list (or Select All).
+- Set constraints (budget per 1k, TTFB, TPS) and weights (speed/latency/cost).
+- Click “Recommend”. Watch the progress bar; Cancel is available.
+- Review ranked candidates with mean TPS/TTFB/Total and estimated cost.
+
+Exports (MD/CSV/PDF)
+- Markdown: human‑readable executive summary with per‑iteration table.
+- CSV: raw per‑iteration results for spreadsheets.
+- PDF: embeds charts and summary (button auto‑enables when jsPDF UMD is present at node_modules/jspdf/dist/jspdf.umd.min.js).
+
+Analytics explained
+- TPS (tokens/sec): throughput. Higher is better.
+- TTFB (seconds): latency to first token. Lower is better.
+- Total time (seconds): full request duration. Lower is better.
+- Cost (USD): estimated using cached OpenRouter pricing where available.
+- Success rate: fraction of successful iterations.
+- Std devs: variability across iterations (e.g., std TPS).
+- Bar chart: mean TPS per case, ±1 SD whiskers for variability, bar outline color = reliability (green 100%, amber 60–99%, red <60%).
+- Scatter: TTFB (x) vs TPS (y), bubble size ~ mean cost/run, color ~ success rate.
+- Radar: normalized 0..100 for Speed, (inverse) Latency, (inverse) Cost, (inverse) Variability, Reliability.
+
+Providers and models (accuracy)
+- On model change, ORPT calls /api/v1/models/{modelId}/endpoints to list its endpoints/providers.
+- The provider dropdown shows only endpoints for that model (plus “auto”).
+- If the endpoint API returns nothing, a safe fallback maps common prefixes (e.g., x‑ai → xAI, groq → Groq).
+
+Custom suites (JSON)
+- Built‑in suites live in media/suites.json.
+- Create or edit with Suite Builder (experimental) and Save.
+- Custom suites merge with built‑ins and override by id.
+
+Minimal example
+{
+  "id": "custom-demo",
+  "name": "Demo Suite",
+  "iterations": 2,
+  "cases": [
+    { "id": "demo-1", "name": "Concise answer", "prompt": "Explain HTTP/2 in 2 sentences.", "params": { "max_tokens": 128, "temperature": 0.3 } }
+  ]
+}
 
 Security and privacy
-- API key storage: VS Code SecretStorage via context.secrets (encrypted at rest, backed by OS keychain where available).
-- No key written to files, settings, or globalState; never logged.
-- Network: Key used only as Authorization: Bearer for requests to openrouter.ai over HTTPS.
+- API key is stored only via VS Code SecretStorage (encrypted at rest, OS keychain‑backed).
+- Not persisted to files/settings/globalState; never logged.
+- Used only as Authorization: Bearer for requests to openrouter.ai over HTTPS.
+- No telemetry is collected by this extension.
 
-How provider selection works
-- When you change the Model in “Test Configuration”:
-  - ORPT requests /api/v1/models/{modelId}/endpoints from OpenRouter.
-  - The provider dropdown updates to only show endpoints for that model (plus “auto”).
-  - If the endpoint API returns nothing, ORPT falls back to deriving the provider from the model id prefix (e.g., x‑ai → xAI, groq → Groq).
-- Global providers are shown only when no model is selected.
-
-Understanding Benchmark Suites
-- Suites run against a single model/provider at a time (the one selected in Test Configuration).
-- Aggregation and charts appear after the run completes:
-  - Bar chart: mean TPS per case with SD whiskers and reliability outline (green/amber/red).
-  - Scatter: TTFB vs TPS. Bubble size ~ mean cost/run, color ~ success rate.
-  - Radar: Speed, Latency, Cost, Consistency, Reliability composite.
-- If a chart has no data (e.g., all runs failed), it will display a fallback message instead of appearing blank.
-
-Recommendation Wizard vs Suites
-- Wizard: quick “mini-benchmark” across multiple selected models, designed to screen candidates fast with constraints and weights.
-- Suites: full, repeatable benchmarking on one selected model/provider with deeper analytics and exports.
-
-Exports
-- Markdown executive summary (per-iteration table + aggregates)
-- CSV of raw per-iteration results
-- PDF of summary and charts (requires jsPDF UMD)
-  - By default, ORPT loads jsPDF from node_modules/jspdf/dist/jspdf.umd.min.js when packaged.
-
-Known limitations & roadmap
-- Quality scoring: reference outputs exist but scoring is not implemented yet.
-- Weighted aggregation: TestCase.weight exists but aggregates are simple means for now.
-- Wizard is a screening tool; a full multi-model “suite runner” is not implemented yet.
-- Stronger typing for webview/provider messages, tests and CI pipeline are not included in this Preview.
-- Packaging size: node_modules are currently shipped to ensure Chart.js and jsPDF work out-of-the-box. We plan to move vendor files to media/ and slim the VSIX.
+Requirements and settings
+- Requirements
+  - VS Code 1.74+ and internet access
+  - OpenRouter API key (sk‑or‑v1‑…)
+- Settings
+  - orpt.saveTestHistory (boolean, default true): save ad‑hoc test results to history
+  - orpt.maxHistoryItems (number, default 100): cap history size
 
 Troubleshooting
 - Charts not visible:
-  - Ensure you installed the latest VSIX and reloaded the window. ORPT now loads Chart.js from node_modules in the packaged extension.
-  - If a chart says “No data to display”, there were no successful datapoints for that chart (e.g., all runs failed).
-- Providers look incorrect:
-  - Selecting a model triggers a model-scoped provider refresh. The provider dropdown should only show endpoints for the selected model (plus “auto”).
-- PDF button disabled:
-  - Bundle jsPDF UMD in the packaged extension (ORPT loads node_modules/jspdf/dist/jspdf.umd.min.js). When present, the PDF button auto-enables.
+  - Use the latest VSIX; ORPT loads Chart.js from node_modules/chart.js/dist/chart.umd.js in packaged builds.
+  - If a chart shows “No data to display”, there were no successful datapoints to plot.
+- Provider list looks wrong:
+  - Change the model and wait for endpoints; the list is scoped to the selected model (plus “auto”).
+- PDF export disabled:
+  - Ensure jsPDF UMD is present (node_modules/jspdf/dist/jspdf.umd.min.js). Button auto‑enables when detected.
+- Rate limiting:
+  - OpenRouter or endpoints may throttle; reduce iterations or concurrency (suites run sequentially by design).
 
-Contributing
-- Issues / Ideas: Open a GitHub issue
-- Pull requests welcome (Preview items above are good starting points)
+Roadmap (Preview → Stable)
+- Quality scoring from reference outputs (starting with exact/heuristic checks for short answers).
+- Weighted aggregations in suite metrics.
+- Full multi‑model suite runner (batch entire suites across many models).
+- Strongly typed message contracts, tests, and CI.
+- Slimmer VSIX by moving vendor assets or bundling.
 
-License
-- MIT (see LICENSE)
-
-Thanks
-- Built for practitioners who need transparent, reproducible model performance insights on OpenRouter.
+Contributing and license
+- Issues/ideas: please open a GitHub issue.
+- PRs welcome (Preview items above are a great place to start).
+- License: MIT (see LICENSE).
