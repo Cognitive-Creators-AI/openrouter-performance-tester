@@ -3,7 +3,7 @@
   "displayName": "OpenRouter Performance Tester (ORPT)",
   "icon": "media/icon.png",
   "description": "Professional AI model performance benchmarking and testing for OpenRouter API",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "preview": false,
   "publisher": "Aetheron",
   "engines": {

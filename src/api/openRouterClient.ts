@@ -300,9 +300,12 @@ export class OpenRouterClient {
 
     public async listModelEndpoints(modelId: string): Promise<string[]> {
         return new Promise((resolve, reject) => {
+            const parts = String(modelId).split('/');
+            const author = encodeURIComponent(parts.shift() || '');
+            const slug = encodeURIComponent(parts.join('/'));
             const options = {
                 hostname: this.baseUrl,
-                path: `/api/v1/models/${encodeURIComponent(modelId)}/endpoints`,
+                path: `/api/v1/models/${author}/${slug}/endpoints`,
                 method: 'GET',
                 agent: this.agent,
                 headers: {
@@ -321,10 +324,12 @@ export class OpenRouterClient {
                     }
                     try {
                         const json = JSON.parse(body);
-                        const arr = Array.isArray(json)
-                            ? json
-                            : (Array.isArray(json.data) ? json.data : (Array.isArray(json.endpoints) ? json.endpoints : []));
-                        const providers: string[] = arr.map((e: any) => e?.provider || e?.name || e?.id).filter((x: any) => !!x);
+                        const endpoints = Array.isArray(json?.data?.endpoints)
+                            ? json.data.endpoints
+                            : (Array.isArray(json?.endpoints) ? json.endpoints : []);
+                        const providers: string[] = (endpoints || [])
+                            .map((e: any) => e?.provider_name || e?.provider || e?.name || e?.id)
+                            .filter((x: any) => !!x);
                         resolve(Array.from(new Set(providers)));
                     } catch (e: any) {
                         reject(new Error(`Failed to parse endpoints response: ${e.message}`));
@@ -343,9 +348,12 @@ export class OpenRouterClient {
 
     public async listModelEndpointsDetailed(modelId: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
+            const parts = String(modelId).split('/');
+            const author = encodeURIComponent(parts.shift() || '');
+            const slug = encodeURIComponent(parts.join('/'));
             const options = {
                 hostname: this.baseUrl,
-                path: `/api/v1/models/${encodeURIComponent(modelId)}/endpoints`,
+                path: `/api/v1/models/${author}/${slug}/endpoints`,
                 method: 'GET',
                 agent: this.agent,
                 headers: {

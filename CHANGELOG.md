@@ -3,6 +3,13 @@
 All notable changes to the "openrouter-performance-tester" extension are documented in this file.
 This project follows Keep a Changelog and Semantic Versioning.
 
+## [1.1.1] - 2025-08-08
+### Changed
+- README updated for GA: removed “Preview” wording, clarified bundled Chart.js/jsPDF and provider pinning.
+- Packaging: version bump to 1.1.1 for Marketplace listing refresh (no breaking API changes).
+### Fixed
+- Provider endpoints handling: reinforce route construction to use /api/v1/models/{author}/{slug}/endpoints and read json.data.endpoints with provider_name when present.
+
 ## [1.1.0] - 2025-08-08 (GA)
 ### Added
 - Setting: orpt.requestTimeoutMs (ms) with default 120000; applied to all OpenRouter requests.
