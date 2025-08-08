@@ -175,8 +175,8 @@ Use the Wizard to compare many models quickly.">?</span></h2>
 
                 <!-- Chart.js charts -->
                 <div class="grid" style="grid-template-columns: 1fr; gap: 12px; margin-top: 12px;">
-                    <canvas id="scatterChart" width="800" height="260" style="background: var(--vscode-input-background, #1e1e1e); border-radius: 6px;"></canvas>
-                    <canvas id="radarChart" width="800" height="260" style="background: var(--vscode-input-background, #1e1e1e); border-radius: 6px;"></canvas>
+                    <canvas id="scatterChart" style="background: var(--vscode-input-background, #1e1e1e);"></canvas>
+                    <canvas id="radarChart" style="background: var(--vscode-input-background, #1e1e1e);"></canvas>
                 </div>
                 <p class="help-text" style="margin-top:4px;">Scatter: bubble size ~ mean cost/run; color ~ success rate</p>
             </section>
@@ -814,8 +814,18 @@ Import/Export to share with your team.">?</span></h2>
                     const x = xCenter - barW / 2;
                     const y = padding + chartH - barH;
 
-                    // Bar
+                    // Bar with subtle gradient for depth
+                    const altColor = (getComputedStyle(document.body).getPropertyValue('--vscode-charts-blue') || '#58a6ff').trim() || '#58a6ff';
+                    const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+                    grad.addColorStop(0, (barColor.trim() || '#2ea043'));
+                    grad.addColorStop(1, altColor);
+                    ctx.fillStyle = grad;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.25)';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowOffsetY = 2;
                     ctx.fillRect(x, y, barW, barH);
+                    ctx.restore();
 
                     // Error whisker (±1 sd) drawn above bar
                     const whiskerH = maxVal > 0 ? ((d.sd || 0) / maxVal) * (chartH - 20) : 0;
@@ -877,6 +887,11 @@ Import/Export to share with your team.">?</span></h2>
                 const canvas = document.getElementById('scatterChart');
                 const ctx = canvas ? canvas.getContext('2d') : null;
                 if (!canvas || !ctx) return;
+
+                // Ensure crisp rendering and enough height for labels
+                try { canvas.style.setProperty('height', '320px', 'important'); } catch {}
+                // Force a reflow so Chart picks up the new CSS height
+                void canvas.offsetHeight;
 
                 // Destroy previous
                 if (state.charts.scatter) {
@@ -945,6 +960,25 @@ Import/Export to share with your team.">?</span></h2>
                     return;
                 }
 
+                try {
+                    // Theme-aware Chart.js defaults
+                    const __fg = getCssVar('--vscode-foreground', '#e6edf3');
+                    const __grid = 'rgba(255,255,255,0.12)';
+                    Chart.defaults.color = __fg;
+                    Chart.defaults.font.family = 'Segoe UI, Roboto, Arial, sans-serif';
+                    Chart.defaults.font.size = 13;
+                    Chart.defaults.devicePixelRatio = Math.max(1, (window.devicePixelRatio || 1));
+                    Chart.defaults.plugins.legend.labels.color = __fg;
+                    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.65)';
+                    Chart.defaults.plugins.tooltip.borderColor = __grid;
+                    Chart.defaults.plugins.tooltip.borderWidth = 1;
+                    Chart.defaults.elements.point.borderWidth = 2;
+                    Chart.defaults.elements.point.radius = 6;
+                    Chart.defaults.elements.point.hoverRadius = 8;
+                    Chart.defaults.elements.line.borderWidth = 2;
+                    Chart.defaults.scale.grid.color = __grid;
+                    Chart.defaults.scale.ticks.color = __fg;
+                } catch {}
                 state.charts.scatter = new Chart(ctx, {
                     type: 'scatter',
                     data: {
@@ -952,17 +986,22 @@ Import/Export to share with your team.">?</span></h2>
                             label: 'TTFB vs TPS (per case)',
                             data: points,
                             parsing: false,
-                            pointRadius: (ctx) => Math.max(3, Math.min(14, ctx.raw?.r || 4)),
+                            pointRadius: (ctx) => Math.max(6, Math.min(16, ctx.raw?.r || 6)),
                             pointBackgroundColor: (ctx) => colorForSR(ctx.raw?.sr ?? 1),
-                            pointBorderColor: (ctx) => colorForSR(ctx.raw?.sr ?? 1),
-                            pointBorderWidth: 1
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointHoverBorderWidth: 2,
+                            pointHoverBorderColor: '#ffffff',
+                            showLine: false
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        devicePixelRatio: Math.max(1, (window.devicePixelRatio || 1)),
+                        layout: { padding: { top: 22, right: 26, bottom: 26, left: 36 } },
                         plugins: {
-                            legend: { display: true, labels: { color: getCssVar('--vscode-foreground', '#e6edf3') } },
+                            legend: { display: true, position: 'bottom', labels: { color: getCssVar('--vscode-foreground', '#e6edf3'), padding: 12 } },
                             tooltip: {
                                 callbacks: {
                                     label: (ctx) => {
@@ -983,13 +1022,13 @@ Import/Export to share with your team.">?</span></h2>
                         },
                         scales: {
                             x: {
-                                title: { display: true, text: 'TTFB (s)', color: getCssVar('--vscode-foreground', '#e6edf3') },
-                                ticks: { color: getCssVar('--vscode-foreground', '#e6edf3') },
+                                title: { display: true, text: 'TTFB (s)', color: getCssVar('--vscode-foreground', '#e6edf3'), font: { size: 13 } },
+                                ticks: { color: getCssVar('--vscode-foreground', '#e6edf3'), font: { size: 12 }, padding: 6 },
                                 grid: { color: 'rgba(255,255,255,0.12)' }
                             },
                             y: {
-                                title: { display: true, text: 'Tokens/sec', color: getCssVar('--vscode-foreground', '#e6edf3') },
-                                ticks: { color: getCssVar('--vscode-foreground', '#e6edf3') },
+                                title: { display: true, text: 'Tokens/sec', color: getCssVar('--vscode-foreground', '#e6edf3'), font: { size: 13 } },
+                                ticks: { color: getCssVar('--vscode-foreground', '#e6edf3'), font: { size: 12 }, padding: 6 },
                                 grid: { color: 'rgba(255,255,255,0.12)' }
                             }
                         }
@@ -1002,6 +1041,11 @@ Import/Export to share with your team.">?</span></h2>
                 const canvas = document.getElementById('radarChart');
                 const ctx = canvas ? canvas.getContext('2d') : null;
                 if (!canvas || !ctx) return;
+
+                // Ensure crisp rendering and enough height for labels
+                try { canvas.style.setProperty('height', '320px', 'important'); } catch {}
+                // Force a reflow so Chart picks up the new CSS height
+                void canvas.offsetHeight;
 
                 // Destroy previous
                 if (state.charts.radar) {
@@ -1038,16 +1082,21 @@ Import/Export to share with your team.">?</span></h2>
                         datasets: [{
                             label: 'Run Profile',
                             data: [speed, latency, cost, consistency, reliability],
-                            backgroundColor: 'rgba(88,166,255,0.2)',
+                            backgroundColor: 'rgba(88,166,255,0.25)',
                             borderColor: getCssVar('--vscode-charts-blue', '#58a6ff'),
-                            pointBackgroundColor: getCssVar('--vscode-charts-blue', '#58a6ff')
+                            borderWidth: 2,
+                            pointBackgroundColor: getCssVar('--vscode-charts-blue', '#58a6ff'),
+                            pointRadius: 3,
+                            pointHoverRadius: 5
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        devicePixelRatio: Math.max(1, (window.devicePixelRatio || 1)),
+                        layout: { padding: { top: 24, right: 24, bottom: 24, left: 24 } },
                         plugins: {
-                            legend: { display: true, labels: { color: getCssVar('--vscode-foreground', '#e6edf3') } }
+                            legend: { display: true, position: 'bottom', labels: { color: getCssVar('--vscode-foreground', '#e6edf3'), padding: 12 } }
                         },
                         scales: {
                             r: {
@@ -1055,7 +1104,7 @@ Import/Export to share with your team.">?</span></h2>
                                 grid: { color: 'rgba(255,255,255,0.12)' },
                                 suggestedMin: 0,
                                 suggestedMax: 100,
-                                pointLabels: { color: getCssVar('--vscode-foreground', '#e6edf3') },
+                                pointLabels: { color: getCssVar('--vscode-foreground', '#e6edf3'), font: { size: 12 }, padding: 8 },
                                 ticks: { display: false }
                             }
                         }

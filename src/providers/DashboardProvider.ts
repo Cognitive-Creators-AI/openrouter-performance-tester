@@ -932,6 +932,8 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
             case 'together': return ['Together'];
             case 'perplexity': return ['Perplexity'];
             case 'fireworks': return ['Fireworks'];
+            case 'cohere': return ['Cohere'];
+            case 'ai21': return ['AI21'];
             default: return [];
         }
     }

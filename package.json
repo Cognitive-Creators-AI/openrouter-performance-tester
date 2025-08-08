@@ -5,7 +5,7 @@
   "description": "Professional AI model performance benchmarking and testing for OpenRouter API",
   "version": "1.0.0",
   "preview": true,
-  "publisher": "orpt",
+  "publisher": "Aetheron",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -89,12 +89,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester"
+    "url": "https://github.com/Cognitive-Creators-AI/-openrouter-performance-tester"
   },
   "bugs": {
-    "url": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester/issues"
+    "url": "https://github.com/Cognitive-Creators-AI/-openrouter-performance-tester/issues"
   },
-  "homepage": "https://github.com/Cognitive-Creators-AI/openrouter-performance-tester#readme",
+  "homepage": "https://github.com/Cognitive-Creators-AI/-openrouter-performance-tester#readme",
   "license": "MIT",
   "dependencies": {
     "chart.js": "^4.5.0",

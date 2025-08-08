@@ -1,6 +1,7 @@
 import * as https from 'https';
 import type { ClientRequest } from 'http';
 import { TestConfig, TestResult, Model } from '../types';
+import { ProxyAgent } from 'proxy-agent';
 
 export class OpenRouterClient {
     private apiKey: string;
@@ -8,6 +9,7 @@ export class OpenRouterClient {
     private currentRequest?: ClientRequest;
     private cancelled = false;
     private cachedModels?: Model[];
+    private agent = new ProxyAgent();
 
     constructor(apiKey: string) {
         this.apiKey = apiKey;
@@ -47,12 +49,13 @@ export class OpenRouterClient {
                 hostname: this.baseUrl,
                 path: '/api/v1/chat/completions',
                 method: 'POST',
+                agent: this.agent,
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json',
                     'Accept': 'text/event-stream',
                     'Content-Length': Buffer.byteLength(postData),
-                    'HTTP-Referer': 'https://github.com/Cognitive-Creators-AI/openrouter-performance-tester',
+                    'HTTP-Referer': 'https://github.com/Cognitive-Creators-AI/-openrouter-performance-tester',
                     'X-Title': 'ORPT Performance Test',
                     'User-Agent': 'ORPT'
                 }
@@ -68,6 +71,8 @@ export class OpenRouterClient {
                         reject(new Error(`API Error: ${res.statusCode} ${res.statusMessage}${errBody ? ' - ' + errBody.slice(0, 500) : ''}`));
                     });
                     res.on('error', (error) => {
+                        this.currentRequest = undefined;
+                        this.cancelled = false;
                         reject(new Error(`API Error: ${res.statusCode} ${res.statusMessage} - ${error.message}`));
                     });
                     return;
@@ -138,6 +143,8 @@ export class OpenRouterClient {
                     const tokensPerSecond = finalCompletionTokens / totalTime;
 
                     onProgress({ percent: 100, message: 'Test completed!' });
+                    this.currentRequest = undefined;
+                    this.cancelled = false;
 
                     // Compute cost using cached pricing if available; fallback heuristic otherwise
                     const pricing = this.getModelPricing(config.model);
@@ -183,7 +190,7 @@ export class OpenRouterClient {
             });
 
             // Timeout to avoid hanging requests
-            req.setTimeout(60000, () => {
+            req.setTimeout(120000, () => {
                 req.destroy(new Error('Request timed out'));
             });
 
@@ -208,6 +215,7 @@ export class OpenRouterClient {
                 hostname: this.baseUrl,
                 path: '/api/v1/models',
                 method: 'GET',
+                agent: this.agent,
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Accept': 'application/json',
@@ -288,6 +296,7 @@ export class OpenRouterClient {
                 hostname: this.baseUrl,
                 path: `/api/v1/models/${encodeURIComponent(modelId)}/endpoints`,
                 method: 'GET',
+                agent: this.agent,
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Accept': 'application/json',
@@ -330,6 +339,7 @@ export class OpenRouterClient {
                 hostname: this.baseUrl,
                 path: '/api/v1/providers',
                 method: 'GET',
+                agent: this.agent,
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Accept': 'application/json',
@@ -372,6 +382,7 @@ export class OpenRouterClient {
                 hostname: this.baseUrl,
                 path: '/api/v1/models',
                 method: 'GET',
+                agent: this.agent,
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Accept': 'application/json',
