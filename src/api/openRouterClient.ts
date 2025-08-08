@@ -10,6 +10,12 @@ export class OpenRouterClient {
     private cancelled = false;
     private cachedModels?: Model[];
     private agent = new ProxyAgent();
+    private requestTimeoutMs = 120000;
+
+    public setRequestTimeoutMs(ms: number) {
+        const n = Number(ms);
+        this.requestTimeoutMs = Number.isFinite(n) ? Math.max(1000, Math.floor(n)) : 120000;
+    }
 
     constructor(apiKey: string) {
         this.apiKey = apiKey;
@@ -35,7 +41,7 @@ export class OpenRouterClient {
                 ],
                 max_tokens: config.maxTokens,
                 stream: true,
-                provider: config.provider === 'auto' ? undefined : { order: [config.provider] }
+                provider: config.provider === 'auto' ? undefined : { only: [config.provider] }
             };
             if (typeof config.temperature === 'number') {
                 body.temperature = config.temperature;
@@ -151,6 +157,7 @@ export class OpenRouterClient {
                     const inputCost = pricing.input ? ((finalPromptTokens ?? 0) / 1000) * pricing.input : 0;
                     const outputCost = pricing.output ? (finalCompletionTokens / 1000) * pricing.output : 0;
                     const estimatedCost = (inputCost + outputCost) || ((finalCompletionTokens / 1000) * 0.002);
+                    const costEstimated = !pricing.input || !pricing.output || typeof finalPromptTokens !== 'number';
 
                     resolve({
                         model: config.model,
@@ -164,7 +171,8 @@ export class OpenRouterClient {
                         timeToFirstToken,
                         tokensPerSecond,
                         cost: estimatedCost,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        costEstimated
                     });
                 });
 
@@ -190,7 +198,7 @@ export class OpenRouterClient {
             });
 
             // Timeout to avoid hanging requests
-            req.setTimeout(120000, () => {
+            req.setTimeout(this.requestTimeoutMs, () => {
                 req.destroy(new Error('Request timed out'));
             });
 
@@ -328,6 +336,49 @@ export class OpenRouterClient {
             req.on('error', (err) => reject(new Error(`Endpoints request failed: ${err.message}`)));
             req.setTimeout(15000, () => {
                 req.destroy(new Error('Endpoints request timed out'));
+            });
+            req.end();
+        });
+    }
+
+    public async listModelEndpointsDetailed(modelId: string): Promise<any[]> {
+        return new Promise((resolve, reject) => {
+            const options = {
+                hostname: this.baseUrl,
+                path: `/api/v1/models/${encodeURIComponent(modelId)}/endpoints`,
+                method: 'GET',
+                agent: this.agent,
+                headers: {
+                    'Authorization': `Bearer ${this.apiKey}`,
+                    'Accept': 'application/json',
+                    'User-Agent': 'ORPT'
+                }
+            };
+
+            const req = https.request(options, (res) => {
+                let body = '';
+                res.on('data', (chunk) => { body += chunk.toString(); });
+                res.on('end', () => {
+                    if (res.statusCode !== 200) {
+                        return reject(new Error(`Endpoints (detailed) API Error: ${res.statusCode} ${res.statusMessage}${body ? ' - ' + body.slice(0, 500) : ''}`));
+                    }
+                    try {
+                        const json = JSON.parse(body);
+                        // Response may be { data: { endpoints: [...] } } or { endpoints: [...] }
+                        const data = (json && (json.data || json)) || {};
+                        const endpoints = Array.isArray(data) ? data
+                            : (Array.isArray(data.endpoints) ? data.endpoints : []);
+                        resolve(endpoints || []);
+                    } catch (e: any) {
+                        reject(new Error(`Failed to parse detailed endpoints response: ${e.message}`));
+                    }
+                });
+                res.on('error', (err) => reject(new Error(`Endpoints (detailed) response error: ${err.message}`)));
+            });
+
+            req.on('error', (err) => reject(new Error(`Endpoints (detailed) request failed: ${err.message}`)));
+            req.setTimeout(15000, () => {
+                req.destroy(new Error('Endpoints (detailed) request timed out'));
             });
             req.end();
         });

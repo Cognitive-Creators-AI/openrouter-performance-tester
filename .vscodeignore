@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 *.vsix
 image.png
 image_720.png
+node_modules/chart.js/**
+node_modules/jspdf/**

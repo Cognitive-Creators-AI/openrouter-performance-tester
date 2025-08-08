@@ -3,8 +3,8 @@
   "displayName": "OpenRouter Performance Tester (ORPT)",
   "icon": "media/icon.png",
   "description": "Professional AI model performance benchmarking and testing for OpenRouter API",
-  "version": "1.0.0",
-  "preview": true,
+  "version": "1.1.0",
+  "preview": false,
   "publisher": "Aetheron",
   "engines": {
     "vscode": "^1.74.0"
@@ -64,14 +64,21 @@
           "type": "number",
           "default": 100,
           "description": "Maximum number of test results to keep in history"
+        },
+        "orpt.requestTimeoutMs": {
+          "type": "number",
+          "default": 120000,
+          "minimum": 10000,
+          "description": "Request timeout for chat/completions in milliseconds"
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile && npm run bundle:vendor",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+"bundle:vendor": "esbuild scripts/vendor-entry.js --bundle --format=iife --target=es2018 --minify --legal-comments=none --outfile=media/vendor/vendor-bundle.js",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
@@ -85,7 +92,8 @@
     "@vscode/test-electron": "^2.3.0",
     "@vscode/vsce": "^3.6.0",
     "eslint": "^8.50.0",
-    "typescript": "^5.2.0"
+    "typescript": "^5.2.0",
+    "esbuild": "^0.21.5"
   },
   "repository": {
     "type": "git",

@@ -6,8 +6,7 @@ export function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.
     
     // Get resource URIs
     const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'style.css'));
-    const chartUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'chart.js', 'dist', 'chart.umd.js'));
-    const jspdfUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'jspdf', 'dist', 'jspdf.umd.min.js'));
+    const vendorUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'vendor', 'vendor-bundle.js'));
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -17,8 +16,7 @@ export function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}';">
         <link href="${styleUri}" rel="stylesheet">
         <title>ORPT Dashboard</title>
-        <script nonce="${nonce}" src="${chartUri}"></script>
-        <script nonce="${nonce}" src="${jspdfUri}"></script>
+        <script nonce="${nonce}" src="${vendorUri}"></script>
     </head>
     <body>
         <div class="container">
@@ -220,6 +218,7 @@ Import/Export to share with your team.">?</span></h2>
                 apiKey: '',
                 models: [],
                 providers: [],
+                providerMeta: {},
                 history: [],
                 suites: [],
                 lastSuiteResult: null,
@@ -501,15 +500,26 @@ Import/Export to share with your team.">?</span></h2>
                 }
             }
 
-            function updateProviders(providers) {
+            function updateProviders(providers, meta) {
                 const list = Array.from(new Set(['auto', ...(providers || [])]));
                 state.providers = list;
+                state.providerMeta = meta || {};
                 const select = document.getElementById('providerSelect');
                 select.innerHTML = '';
                 list.forEach(provider => {
                     const option = document.createElement('option');
                     option.value = provider;
-                    option.textContent = provider;
+                    let label = provider;
+                    const info = state.providerMeta && state.providerMeta[provider];
+                    if (info && provider !== 'auto') {
+                        const ctx = info.context_length ?? info.max_prompt_tokens ?? '—';
+                        const p = info.pricing?.prompt ?? info.pricing?.input ?? info.pricing?.prompt_price;
+                        const c = info.pricing?.completion ?? info.pricing?.output ?? info.pricing?.completion_price;
+                        const pStr = (typeof p === 'number' || typeof p === 'string') ? String(p) : '';
+                        const cStr = (typeof c === 'number' || typeof c === 'string') ? String(c) : '';
+                        label = provider + '  • ctx ' + ctx + '  • ' + pStr + '/' + cStr;
+                    }
+                    option.textContent = label;
                     select.appendChild(option);
                 });
             }
@@ -519,12 +529,12 @@ Import/Export to share with your team.">?</span></h2>
                 if (scope === 'model') {
                     const current = state.currentModelId || (document.getElementById('modelSelect')?.value || '');
                     if (message.modelId && message.modelId === current) {
-                        updateProviders(providers);
+                        updateProviders(providers, message.meta);
                     }
                 } else {
                     const current = state.currentModelId || (document.getElementById('modelSelect')?.value || '');
                     if (!current) {
-                        updateProviders(providers);
+                        updateProviders(providers, message.meta);
                     }
                 }
             }
@@ -609,7 +619,7 @@ Import/Export to share with your team.">?</span></h2>
                             <span class="metric-label">Total Time</span>
                         </div>
                         <div class="metric">
-                            <span class="metric-value">$\${result.cost.toFixed(4)}</span>
+                            <span class="metric-value">$\${result.cost.toFixed(4)}\${result.costEstimated ? ' <span class="chip">Estimated</span>' : ''}</span>
                             <span class="metric-label">Cost</span>
                         </div>
                     </div>
@@ -691,6 +701,7 @@ Import/Export to share with your team.">?</span></h2>
             function updateSuiteSummary(result) {
                 if (!result) return;
                 const el = document.getElementById('suiteSummary');
+                const hasEst = (result.results || []).some(r => r && r.ok && r.result && r.result.costEstimated);
                 const html = \`
                     <h3>Suite: \${result.suiteId}</h3>
                     <p class="help-text" style="margin:6px 0 10px 0;">Model: \${result.model} (Provider: \${result.provider})</p>
@@ -709,7 +720,7 @@ Import/Export to share with your team.">?</span></h2>
                         </div>
                         <div class="metric">
                             <span class="metric-value">$\${result.aggregates.meanCost.toFixed(4)}</span>
-                            <span class="metric-label">Mean Cost</span>
+                            <span class="metric-label">Mean Cost\${hasEst ? ' (Est.)' : ''}</span>
                         </div>
                     </div>\`;
                 el.innerHTML = html;

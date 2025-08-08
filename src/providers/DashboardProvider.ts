@@ -150,6 +150,10 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
     private async saveApiKey(apiKey: string) {
         await this._context.secrets.store('orpt.apiKey', apiKey);
         this._openRouterClient = new OpenRouterClient(apiKey);
+        try {
+            const timeout = vscode.workspace.getConfiguration('orpt').get<number>('requestTimeoutMs', 120000);
+            this._openRouterClient.setRequestTimeoutMs?.(timeout);
+        } catch {}
         this.postMessage({ command: 'apiKeySaved', success: true });
         await this.sendModels();
         await this.sendAllProviders();
@@ -184,6 +188,10 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
         
         if (apiKey) {
             this._openRouterClient = new OpenRouterClient(apiKey);
+            try {
+                const timeout = vscode.workspace.getConfiguration('orpt').get<number>('requestTimeoutMs', 120000);
+                this._openRouterClient.setRequestTimeoutMs?.(timeout);
+            } catch {}
             await this.sendModels();
             await this.sendAllProviders();
         }
@@ -201,6 +209,10 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
         try {
             this.postMessage({ command: 'testStarted' });
             
+            try {
+                const timeout = vscode.workspace.getConfiguration('orpt').get<number>('requestTimeoutMs', 120000);
+                this._openRouterClient.setRequestTimeoutMs?.(timeout);
+            } catch {}
             const result = await this._openRouterClient.runPerformanceTest(
                 config,
                 (progress) => {
@@ -330,6 +342,26 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
             return;
         }
         try {
+            // Prefer detailed endpoints for richer labels in the UI
+            let endpointsDetailed: any[] | undefined;
+            try {
+                endpointsDetailed = await (this._openRouterClient as any).listModelEndpointsDetailed?.(modelId);
+            } catch {}
+            if (endpointsDetailed && endpointsDetailed.length) {
+                const slugs = Array.from(new Set(endpointsDetailed
+                    .map(e => e?.provider_name || e?.provider || e?.name || e?.id)
+                    .filter(Boolean)));
+                const meta: Record<string, any> = {};
+                for (const e of endpointsDetailed) {
+                    const slug = e?.provider_name || e?.provider || e?.name || e?.id;
+                    if (slug) meta[slug] = e;
+                }
+                const list = ['auto', ...slugs];
+                this.postMessage({ command: 'providers', scope: 'model', modelId, providers: list, meta });
+                return;
+            }
+
+            // Fallback to simple provider list
             const endpoints = await this._openRouterClient.listModelEndpoints(modelId);
             let specific: string[] = Array.from(new Set(endpoints || [])).filter(Boolean);
             if (!specific.length) {
@@ -399,6 +431,10 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
             this.postMessage({ command: 'suiteError', error: 'Please set your API key first' });
             return;
         }
+        try {
+            const timeout = vscode.workspace.getConfiguration('orpt').get<number>('requestTimeoutMs', 120000);
+            this._openRouterClient.setRequestTimeoutMs?.(timeout);
+        } catch {}
         const allSuites = await this.getAllSuites();
         const suite = allSuites.find(s => s.id === payload.suiteId);
         if (!suite) {
@@ -636,6 +672,10 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
             return;
         }
         this._wizardCancelled = false;
+        try {
+            const timeout = vscode.workspace.getConfiguration('orpt').get<number>('requestTimeoutMs', 120000);
+            this._openRouterClient.setRequestTimeoutMs?.(timeout);
+        } catch {}
 
         const suites = await this.getAllSuites();
         const suite = suites.find(s => s.id === (payload.suiteId || 'general-purpose-v1')) || suites[0];

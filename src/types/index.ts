@@ -24,6 +24,7 @@ export interface TestResult {
     // Cost metrics
     cost: number;
     timestamp: string;
+    costEstimated?: boolean;
 }
 
 export interface Model {
